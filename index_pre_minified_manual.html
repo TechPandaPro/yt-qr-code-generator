@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>YT QR Generator</title>
+    <style>
+      body {
+        font-family: Arial;
+        text-align: center;
+        margin: 0;
+        padding: 20px;
+      }
+
+      #v {
+        padding: 5px 6px;
+        border: 1px solid gray;
+        border-radius: 4px;
+        font-size: 1em;
+        width: 370px;
+      }
+
+      #v.i:not(:placeholder-shown) {
+        border-color: red;
+        outline-color: red;
+      }
+
+      #v.i + #o {
+        display: none;
+      }
+
+      #q,
+      #d {
+        display: block;
+        margin: 0 auto;
+      }
+
+      #q {
+        margin-top: 25px;
+        margin-bottom: 25px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>YouTube QR Code Generator</h1>
+    <p>Input any YT video URL to generate a QR code for it!</p>
+    <input
+      id="v"
+      type="url"
+      placeholder="https://youtube.com/watch?v=..."
+      class="i"
+    />
+    <div id="o">
+      <img id="q" />
+      <p>(Right click to save.)</p>
+    </div>
+    <script>
+      const qr = [
+        "x09x09x09,",
+        "x09x09x09,",
+        ",x17,1-1,/x17,",
+        ",1x05/.0+0.01x051,",
+        ",/+0/0+-0//+01,",
+        ",/+0/.0+-0/+01,",
+        ",/+01-/+-/+01,",
+        ",1x05//1-0.01x051,",
+        ",x16//////x161,",
+        "x09-01-.x090",
+        ",x150x170.0///1-",
+        "-1,.-/1,/1,1-1-",
+        ",/1-1,1,1,////.,",
+        ",/+-0+x051,1-1,",
+        ",+,.,/x150+/+,",
+        ",/1,1,/.0.0.0//1-",
+        ",1,.0+1x05/x150.,",
+        ",/.0//1,1-x15-1,",
+        ",1,1,+,+/x1501-0",
+        "x0901x05+-.x05",
+        ",x16/1x07///+,",
+        ",1x051x05/+-.,1,",
+        ",/+0//x19.0.-",
+        ",/+0//.x05.0x15,",
+        ",/+0///+,1-.01,",
+        ",1x05/+-/x16,1,",
+        ",x16/1,+1-x161,",
+        "x09x09x09,",
+        "x09x09x09,",
+      ];
+
+      const doc = document;
+
+      const v = doc.getElementById("v");
+
+      const q = doc.getElementById("q");
+      const d = doc.getElementById("d");
+
+      const can = doc.createElement("canvas");
+      const ctx = can.getContext("2d");
+      const sqSi = 9;
+      const sqCo = 29;
+      can.width = sqSi * sqCo;
+      can.height = sqSi * sqCo;
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, can.width, can.height);
+      ctx.fillStyle = "black";
+      for (let i = 0; i < qr.length; i++) {
+        const qrRRaw = qr[i];
+        let qrR = "";
+        for (let ii = 0; ii < qrRRaw.length; ii++) {
+          if (qrRRaw[ii] === "x") {
+            qrR += qrRRaw[ii + 1].repeat(Number(qrRRaw[ii + 2]));
+            ii += 2;
+          } else {
+            qrR +=
+              qrRRaw[ii] === "/"
+                ? "10"
+                : qrRRaw[ii] === ","
+                ? "00"
+                : qrRRaw[ii] === "."
+                ? "11"
+                : qrRRaw[ii] === "-"
+                ? "000"
+                : qrRRaw[ii] === "+"
+                ? "111"
+                : qrRRaw[ii];
+          }
+        }
+        for (let j = 0; j < qrR.length; j++) {
+          const sqVal = qrR[j];
+          if (sqVal === "1") ctx.fillRect(j * sqSi, i * sqSi, sqSi, sqSi);
+        }
+      }
+      q.src = can.toDataURL();
+
+      v.addEventListener("input", () => {
+        const id = getId();
+        if (!v.value || !id) v.classList.add("i");
+        else v.classList.remove("i");
+      });
+
+      function getId() {
+        let id;
+        try {
+          const url = new URL(v.value);
+          if (url.host === "youtube.com" || url.host === "www.youtube.com") {
+            const sp = new URLSearchParams(url.search);
+            id = sp.get("v");
+          } else if (url.host === "youtu.be") id = url.pathname.split("/")[1];
+          else id = null;
+        } catch {
+          id = null;
+        }
+        return id;
+      }
+    </script>
+  </body>
+</html>

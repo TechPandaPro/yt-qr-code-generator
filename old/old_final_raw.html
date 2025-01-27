@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YouTube QR Code Generator</title>
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        text-align: center;
+        margin: 0;
+        padding: 20px;
+      }
+
+      #videoUrlInput {
+        padding: 5px 6px;
+        text-overflow: ellipsis;
+        box-sizing: border-box;
+        border: 1px solid rgb(127 127 127);
+        border-radius: 4px;
+        font-size: 1em;
+        width: 370px;
+        transition: border-color 0.2s, outline-color 0.2s;
+      }
+
+      #videoUrlInput.invalid:not(:placeholder-shown) {
+        border-color: red;
+        outline-color: red;
+      }
+
+      #videoUrlInput.invalid + #output {
+        display: none;
+      }
+
+      #qrCodeImage,
+      #downloadQrCode {
+        display: block;
+        margin: 0 auto;
+      }
+
+      #qrCodeImage {
+        margin-top: 25px;
+        margin-bottom: 25px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>YouTube QR Code Generator</h1>
+    <p>Input any YouTube video URL to generate a QR code for it!</p>
+    <input
+      id="videoUrlInput"
+      type="url"
+      placeholder="https://youtube.com/watch?v=..."
+      class="invalid"
+    />
+    <div id="output">
+      <img id="qrCodeImage" />
+      <!-- <button id="downloadQrCode">Download QR Code</button> -->
+    </div>
+    <script>
+      // const qrCode = [
+      //   "00000000000000000000000000000",
+      //   "00000000000000000000000000000",
+      //   "00111111100100010010111111100",
+      //   "00100000101101110110100000100",
+      //   "00101110100111000010101110100",
+      //   "00101110101101110000101110100",
+      //   "00101110100010111000101110100",
+      //   "00100000101010000110100000100",
+      //   "00111111101010101010111111100",
+      //   "00000000000001000110000000000",
+      //   "00111110111111101101010101000",
+      //   "00010011000101001010010001000",
+      //   "00101000100100100101010101100",
+      //   "00101110000111000001001000100",
+      //   "00111001100101111101111011100",
+      //   "00101001001011011011010101000",
+      //   "00100110111100000101111101100",
+      //   "00101101010100100011111000100",
+      //   "00100100111001111011111010000",
+      //   "00000000001000001110001100000",
+      //   "00111111101000000010101011100",
+      //   "00100000100000101110001100100",
+      //   "00101110101011111111111011000",
+      //   "00101110101011000001101111100",
+      //   "00101110101010111001000110100",
+      //   "00100000101110001011111100100",
+      //   "00111111101001111000111111100",
+      //   "00000000000000000000000000000",
+      //   "00000000000000000000000000000",
+      // ];
+
+      const qrCode = [
+        "x09x09x0900",
+        "x09x09x0900",
+        "00x1700100010010x1700",
+        "001x051011011101101x05100",
+        "00101110100111x0410101110100",
+        "0010111010110111x04101110100",
+        "00101110100010111000101110100",
+        "001x0510101x041101x05100",
+        "00x16101010101010x16100",
+        "x09x04100011x090",
+        "00x150x1701101010101000",
+        "00010011000101001010010001000",
+        "00101000100100100101010101100",
+        "0010111x04111x051001000100",
+        "0011100110010x150x14011100",
+        "00101001001011011011010101000",
+        "00100110x14x0510x1501100",
+        "001011010101001000x15000100",
+        "0010010011100x140x1501x04",
+        "x0901x0511100011x05",
+        "00x16101x0710101011100",
+        "001x051x05101110001100100",
+        "001011101010x1911011000",
+        "00101110101011x05110x1500",
+        "00101110101010111001000110100",
+        "001x051011100010x1600100",
+        "00x16101001111000x16100",
+        "x09x09x0900",
+        "x09x09x0900",
+      ];
+
+      const videoUrlInput = document.getElementById("videoUrlInput");
+
+      const qrCodeImage = document.getElementById("qrCodeImage");
+      const downloadQrCode = document.getElementById("downloadQrCode");
+
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const squareSize = 9;
+      const squareCount = 29;
+      canvas.width = squareSize * squareCount;
+      canvas.height = squareSize * squareCount;
+      // document.body.append(canvas);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#000000";
+      for (let i = 0; i < qrCode.length; i++) {
+        const qrRowRaw = qrCode[i];
+        let qrRow = "";
+        for (let ii = 0; ii < qrRowRaw.length; ii++) {
+          if (qrRowRaw[ii] === "x") {
+            qrRow += qrRowRaw[ii + 1].repeat(Number(qrRowRaw[ii + 2]));
+            ii += 2;
+          } else {
+            qrRow += qrRowRaw[ii];
+          }
+        }
+        // const qrRowStr = BigInt(qrRow).toString().slice(1);
+        for (let j = 0; j < qrRow.length; j++) {
+          const qrSquareVal = qrRow[j];
+          if (qrSquareVal === "1")
+            ctx.fillRect(
+              j * squareSize,
+              i * squareSize,
+              squareSize,
+              squareSize
+            );
+        }
+      }
+      qrCodeImage.src = canvas.toDataURL();
+
+      videoUrlInput.addEventListener("input", () => {
+        const videoId = getInputVideoId();
+
+        console.log(videoUrlInput.value);
+        console.log(videoId);
+
+        if (!videoUrlInput.value || !videoId)
+          videoUrlInput.classList.add("invalid");
+        else {
+          videoUrlInput.classList.remove("invalid");
+
+          // console.log(videoUrls[random(videoId, 0, videoUrls.length)]);
+
+          const videoIdNum = Number(
+            videoId
+              .split("")
+              .map((l, i) => videoId.charCodeAt(i).toString())
+              .join("")
+          );
+
+          // qrCodeImage.src = imageUrl;
+        }
+      });
+
+      function getInputVideoId() {
+        let videoId;
+        // console.log(videoUrlInput.value);
+        try {
+          const url = new URL(videoUrlInput.value);
+          // console.log(url);
+          if (url.host === "youtube.com" || url.host === "www.youtube.com") {
+            const searchParams = new URLSearchParams(url.search);
+            videoId = searchParams.get("v");
+          } else if (url.host === "youtu.be") {
+            videoId = url.pathname.split("/")[1];
+          } else videoId = null;
+        } catch {
+          videoId = null;
+        }
+        // console.log(videoId);
+        return videoId;
+      }
+    </script>
+  </body>
+</html>

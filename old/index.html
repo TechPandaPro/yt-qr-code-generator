@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YouTube QR Code Generator</title>
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        text-align: center;
+        margin: 0;
+        padding: 20px;
+      }
+
+      #videoUrlInput {
+        padding: 5px 6px;
+        text-overflow: ellipsis;
+        box-sizing: border-box;
+        border: 1px solid rgb(127 127 127);
+        border-radius: 4px;
+        font-size: 1em;
+        width: 370px;
+        transition: border-color 0.2s, outline-color 0.2s;
+      }
+
+      #videoUrlInput.invalid {
+        border-color: red;
+        outline-color: red;
+      }
+
+      #videoUrlInput.invalid + #output {
+        display: none;
+      }
+
+      #qrCodeImage,
+      #downloadQrCode {
+        display: block;
+        margin: 0 auto;
+      }
+
+      #qrCodeImage {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>YouTube QR Code Generator</h1>
+    <input
+      id="videoUrlInput"
+      type="url"
+      placeholder="https://youtube.com/watch?v=..."
+      class="invalid"
+    />
+    <div id="output">
+      <img id="qrCodeImage" />
+      <button id="downloadQrCode">Download QR Code</button>
+    </div>
+    <script>
+      const videoUrls = [
+        {
+          url: "https://youtu.be/j8PxqgliIno",
+          image:
+            "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAAAXNSR0IArs4c6QAAASRJREFUSEuVVlsOwzAIS+5/6ExsYnIdG2h/+iCBYGPoXmudZa5zfqa998pnfk9b3N0VloMOciFvjjXoCN/z2fn5B1EOMJMMzo7wMO4gbZAMrhwgPAq23NMGcfDFd8WTQmTEicOcsyw5qapLYY5BR9UlS8tEVaXMsKmtX7jYwCRXdpfV43tkgidEnBXpLFDeK4shxThRdaX2iidbwqwBJ0YXGFF4cMIKV9BM+GNOH5mohlj1MNe/rrLHBulaiCvTSiN4gIuTqiRd21cQXpw4mJhsnhlOT9yGdqd4Lm08oao4qbNuMrogTqiKp7YLM95ubnCGSEE7TyZdtu1t2FYQYzdW3czIMlc/FK8ycSO4GgFhaznhcVqNY4Tt4mQyGVOIypGy4boPQ1/d+9nzBQwAAAAASUVORK5CYII=",
+        },
+        // "https://youtu.be/AACOcpA8i-U",
+        // "https://youtu.be/bIwVIx5pp88",
+        // "https://youtu.be/HnfkEVtetuE",
+        // "https://youtu.be/QB7ACr7pUuE",
+        // "https://youtu.be/mrThFRR3n8A",
+        // "https://youtu.be/MCjlo7PtXMQ",
+        // "https://youtu.be/a6pbjksYUHY",
+        // "https://youtu.be/ll-mQPDCn-U",
+        // "https://youtu.be/iik25wqIuFo",
+        // "https://youtu.be/dRV6NaciZVk",
+      ];
+
+      const qrCode = [
+        11111111001000100101111111, 11000001011011101101000001,
+        11011101001110000101011101, 11011101011011100001011101,
+        11011101000101110001011101, 11000001010100001101000001,
+        11111111010101010101111111, 10000000000010001100000000,
+        11111101111111011010101010, 10100110001010010100100010,
+        11010001001001001010101011, 11011100001110000010010001,
+        11110011001011111011110111, 11010010010110110110101010,
+        11001101111000001011111011, 11011010101001000111110001,
+        11001001110011110111110100, 10000000010000011100011000,
+        11111111010000000101010111, 11000001000001011100011001,
+        11011101010111111111110110, 11011101010110000011011111,
+        11011101010101110010001101, 11000001011100010111111001,
+        11111111010011110001111111,
+      ];
+
+      const videoUrlInput = document.getElementById("videoUrlInput");
+
+      const qrCodeImage = document.getElementById("qrCodeImage");
+      const downloadQrCode = document.getElementById("downloadQrCode");
+
+      videoUrlInput.addEventListener("input", () => {
+        const videoId = getInputVideoId();
+
+        console.log(videoUrlInput.value);
+        console.log(videoId);
+
+        if (!videoUrlInput.value || !videoId)
+          videoUrlInput.classList.add("invalid");
+        else {
+          videoUrlInput.classList.remove("invalid");
+
+          // console.log(videoUrls[random(videoId, 0, videoUrls.length)]);
+
+          const videoIdNum = Number(
+            videoId
+              .split("")
+              .map((l, i) => videoId.charCodeAt(i).toString())
+              .join("")
+          );
+
+          qrCodeImage.src =
+            videoUrls[getRandomInt(videoIdNum, 0, videoUrls.length)].image;
+        }
+      });
+
+      function getInputVideoId() {
+        let videoId;
+        // console.log(videoUrlInput.value);
+        try {
+          const url = new URL(videoUrlInput.value);
+          // console.log(url);
+          if (url.host === "youtube.com" || url.host === "www.youtube.com") {
+            const searchParams = new URLSearchParams(url.search);
+            videoId = searchParams.get("v");
+          } else if (url.host === "youtu.be") {
+            videoId = url.pathname.split("/")[1];
+          } else videoId = null;
+        } catch {
+          videoId = null;
+        }
+        // console.log(videoId);
+        return videoId;
+      }
+
+      // creative solution from https://stackoverflow.com/a/19303725
+      function random(seed) {
+        var x = Math.sin(seed) * 10000;
+        return x - Math.floor(x);
+      }
+
+      function getRandomInt(seed, min, max) {
+        const randomNum = random(seed);
+        const minCeiled = Math.ceil(min);
+        const maxFloored = Math.floor(max);
+        return Math.floor(randomNum * (maxFloored - minCeiled) + minCeiled); // min is inclusive, max is exclusive
+      }
+    </script>
+  </body>
+</html>
